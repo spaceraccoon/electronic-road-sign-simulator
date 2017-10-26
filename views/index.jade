@@ -23,9 +23,7 @@ block content
       for (i = 0; i < #{env.DISPLAY_SIZE}; i++) {
         message += Math.floor(Math.random() * (max - min + 1)) + min
       }
-      document.getElementById('generate-button').addEventListener('click', function(event){
-        document.getElementById('message-box').value = message
-      })
+      document.getElementById('message-box').value = message
     }
 
   script.
@@ -33,6 +31,16 @@ block content
       event.preventDefault()
       var message = document.getElementById('message-box').value
       var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function() {
+        console.log(this.status);
+        if (this.readyState == 4) {
+          if (this.status == 200) {
+            document.getElementById('message-box').value = ''
+          } else {
+             alert('Invalid input. Input should be a binary string of length ' + #{env.DISPLAY_SIZE});
+          }
+        }
+      }
       xhttp.open('POST', '/message', true)
       xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
       xhttp.send('message=' + message)
