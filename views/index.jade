@@ -1,0 +1,71 @@
+extends layout
+
+block content
+  h1 Electronic Road Sign Simulator
+
+  form(action='/message', method='POST', id='message-form')
+    textarea(name='message', id='message-box', rows='4', cols='123')
+    br
+    button(type='button', value='generate', id='generate-button', onclick='generate()') Generate
+    input(type='submit', value='Submit')
+  h2 Display
+  div#display
+  h2 Message Received
+  p#message
+
+block scripts
+  script(src='/socket.io/socket.io.js')
+  script.
+    var generate = function() {
+      var min = Math.ceil(0)
+      var max = Math.floor(1)
+      var message = ''
+      for (i = 0; i < 2592; i++) {
+        message += Math.floor(Math.random() * (max - min + 1)) + min
+      }
+      document.getElementById('generate-button').addEventListener('click', function(event){
+        document.getElementById('message-box').value = message
+      })
+    }
+
+  script.
+    document.getElementById('message-form').addEventListener('submit', function(event){
+      event.preventDefault()
+      var message = document.getElementById('message-box').value
+      var xhttp = new XMLHttpRequest();
+      xhttp.open('POST', '/message', true)
+      xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
+      xhttp.send('message=' + message)
+    });
+  script.
+    var display = document.getElementById('display')
+    for (i = 0; i < 2592; i++) {
+      var cell = document.createElement('div')
+      cell.className = 'off'
+      display.appendChild(cell)
+    }
+  script.
+    var changeMessage = function (message) {
+      document.getElementById('message').innerText = message
+      display = document.getElementById('display')
+      while (display.hasChildNodes()) {
+        display.removeChild(display.lastChild)
+      }
+      var bitArray = message.split('').map(Number)
+      var display = document.getElementById('display')
+      bitArray.forEach(function(element) {
+        var cell = document.createElement('div')
+        cell.className = element == 1 ? 'off' : 'on'
+        display.appendChild(cell)
+      })
+    }
+
+    var socket = io.connect('http://localhost:3000')
+
+    socket.on('init', function(message) {
+      changeMessage(message)
+    })
+
+    socket.on('message', function(message) {
+      changeMessage(message)
+    })
