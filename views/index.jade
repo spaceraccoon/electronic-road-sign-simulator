@@ -2,7 +2,8 @@ extends layout
 
 block content
   h1 Electronic Road Sign Simulator
-
+  b Current Users:
+    span#count
   form(action='/message', method='POST', id='message-form')
     textarea(name='message', id='message-box', rows='4', cols='123')
     br
@@ -13,59 +14,55 @@ block content
   h2 Message Received
   p#message
 
-  block scripts
-    script(src='/socket.io/socket.io.js')
-    script.
-      var generate = function() {
-        var min = Math.ceil(0)
-        var max = Math.floor(1)
-        var message = ''
-        for (i = 0; i < #{env.DISPLAY_SIZE}; i++) {
-          message += Math.floor(Math.random() * (max - min + 1)) + min
-        }
-        document.getElementById('generate-button').addEventListener('click', function(event){
-          document.getElementById('message-box').value = message
-        })
-      }
-
-    script.
-      document.getElementById('message-form').addEventListener('submit', function(event){
-        event.preventDefault()
-        var message = document.getElementById('message-box').value
-        var xhttp = new XMLHttpRequest();
-        xhttp.open('POST', '/message', true)
-        xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
-        xhttp.send('message=' + message)
-      });
-    script.
-      var display = document.getElementById('display')
+  script(src='/socket.io/socket.io.js')
+  script.
+    var generate = function() {
+      var min = Math.ceil(0)
+      var max = Math.floor(1)
+      var message = ''
       for (i = 0; i < #{env.DISPLAY_SIZE}; i++) {
+        message += Math.floor(Math.random() * (max - min + 1)) + min
+      }
+      document.getElementById('generate-button').addEventListener('click', function(event){
+        document.getElementById('message-box').value = message
+      })
+    }
+
+  script.
+    document.getElementById('message-form').addEventListener('submit', function(event){
+      event.preventDefault()
+      var message = document.getElementById('message-box').value
+      var xhttp = new XMLHttpRequest();
+      xhttp.open('POST', '/message', true)
+      xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
+      xhttp.send('message=' + message)
+    });
+  script.
+    var changeMessage = function (message) {
+      document.getElementById('message').innerText = message
+      var display = document.getElementById('display')
+      while (display.hasChildNodes()) {
+        display.removeChild(display.lastChild)
+      }
+      var bitArray = message.split('').map(Number)
+      var display = document.getElementById('display')
+      bitArray.forEach(function(element) {
         var cell = document.createElement('div')
-        cell.className = 'off'
+        cell.className = element == 1 ? 'off' : 'on'
         display.appendChild(cell)
-      }
-    script.
-      var changeMessage = function (message) {
-        document.getElementById('message').innerText = message
-        var display = document.getElementById('display')
-        while (display.hasChildNodes()) {
-          display.removeChild(display.lastChild)
-        }
-        var bitArray = message.split('').map(Number)
-        var display = document.getElementById('display')
-        bitArray.forEach(function(element) {
-          var cell = document.createElement('div')
-          cell.className = element == 1 ? 'off' : 'on'
-          display.appendChild(cell)
-        })
-      }
-
-      var socket = io.connect('/')
-
-      socket.on('init', function(message) {
-        changeMessage(message)
       })
+    }
 
-      socket.on('message', function(message) {
-        changeMessage(message)
-      })
+    var socket = io.connect('/')
+
+    socket.on('init', function(message) {
+      changeMessage(message)
+    })
+
+    socket.on('user', function(count) {
+      document.getElementById('count').innerText = count
+    })
+
+    socket.on('message', function(message) {
+      changeMessage(message)
+    })

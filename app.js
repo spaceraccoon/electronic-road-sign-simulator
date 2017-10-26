@@ -39,7 +39,7 @@ app.post('/message', function(req, res, next) {
     match = req.body.message.match(re);
     if (match) {
       message = match[0];
-      io.sockets.emit('message', message);
+      io.emit('message', message);
       res.send({});
     } else {
       var err = new Error('Invalid Message');
@@ -48,8 +48,16 @@ app.post('/message', function(req, res, next) {
     }
 });
 
+var count = 0;
+
 io.on('connection', function (socket) {
+  count += 1;
+  io.emit('user', count);
   socket.emit('init', message);
+  socket.on('disconnect', function() {
+    count--
+    io.emit('user', count)
+  })
 })
 
 // catch 404 and forward to error handler
