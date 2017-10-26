@@ -20,7 +20,7 @@ block scripts
       var min = Math.ceil(0)
       var max = Math.floor(1)
       var message = ''
-      for (i = 0; i < 2592; i++) {
+      for (i = 0; i < #{env.DISPLAY_SIZE}; i++) {
         message += Math.floor(Math.random() * (max - min + 1)) + min
       }
       document.getElementById('generate-button').addEventListener('click', function(event){
@@ -39,7 +39,7 @@ block scripts
     });
   script.
     var display = document.getElementById('display')
-    for (i = 0; i < 2592; i++) {
+    for (i = 0; i < #{env.DISPLAY_SIZE}; i++) {
       var cell = document.createElement('div')
       cell.className = 'off'
       display.appendChild(cell)

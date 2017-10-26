@@ -11,8 +11,15 @@ var users = require('./routes/users');
 
 var app = express();
 app.io = io;
-var re = /^[0-1]{2592}$/i;
+app.locals.env = {
+  DISPLAY_WIDTH: 96,
+  DISPLAY_HEIGHT: 27,
+  DISPLAY_SIZE: 2592
+}
+
+var re = new RegExp('^[0-1]{' + app.locals.env.DISPLAY_SIZE + '}$');
 var message = '';
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
